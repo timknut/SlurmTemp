@@ -4,13 +4,21 @@ SlurmTemp
 Automatically create and send slurm scripts to the Cigene cluster. 
 You can modify job name, log name and number and CPUs for the job with command line options.
 
-Usage: `Slurmtemp.py "commands" [n threads as integer]`
+### Help text
+```bash
+usage: SlurmTemp.py [-h] [-n CPUS] [-j JOBNAME] unix_command
 
-type `Slurmtemp.py -h` for command line help.
+positional arguments:
+  unix_command          - command needs to be in "" if multiple arguments
 
-
+optional arguments:
+  -h, --help            show this help message and exit
+  -n CPUS, --cpus CPUS  - number of CPUs as integer
+  -j JOBNAME, --jobname JOBNAME
+                        Custom SLURM job name
+```
 ####Installation
-**Make shure you have a bin folder in your HOME dir. `~/bin/`**
+*Make shure you have a bin folder in your HOME dir. `~/bin/`*
 ```bash
 cd ~/
 git clone git@github.com:timknut/bioinf_tools.git # Clone from github

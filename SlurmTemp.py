@@ -1,31 +1,37 @@
-### **Slurmtemp.py**
-Command line tool for sending simple yet CPU itensive jobs to the CIGENE cluster. 
-You can modify job name, log name and number and CPUs for the job with command line options.
+#!/bin/env python
+"""
+Created on Fri Aug  8 04:20:47 2014
 
-Usage: `Slurmtemp.py "commands" [n threads as integer]`
+@author: Tim Knutsen
+"""
 
-type `Slurmtemp.py -h` for command line help.
+import os
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument("unix_command", help = '- command needs to be in "" if multiple arguments',
+        type = str)
+parser.add_argument("-n", "--cpus", help = "- number of CPUs as integer", type = int, default = 1)
+parser.add_argument("-j", "--jobname", help = "Custom SLURM job name", type = str)
+        # default = str("Slurmtemp"))
 
-####Installation
-**Make shure you have a bin folder in your HOME dir. `~/bin/`**
-```bash
-cd ~/
-git clone git@github.com:timknut/bioinf_tools.git # Clone from github
-cd ~/bin/
-ln -s ~/bioinf_tools/Slurmtemp.py # Make symlink to Executable.
-```
+args = parser.parse_args()
+template_text = """#!/bin/bash -x 
+#SBATCH -J %s 
+#SBATCH -N 1 
+#SBATCH -n %i
 
-####Example:
-The following bash command will reproduce the script below
+%s""" % (args.jobname, args.cpus, args.unix_command)
 
-`Slurmtemp.py "module load bamtools && bamtools merge $(for file in $(ls *RG.bam); do echo " -in "$file; done) -out outbam.merge.bam -forceCompression" 2 -j MySlurmJob`
+if args.jobname:
+    custom_SO = "#SBATCH --output=%s_%%j.out" % (args.jobname)
+    with open("slurm_template", "w") as template:
+        template.write(template_text + "\n" + custom_SO)
+    print(template_text + "\n"+ custom_SO)	
+else:
+    with open("slurm_template", "w") as template:
+       	template.write(template_text)
+    print(template_text)
 
-```bash
-#!/bin/bash -x
-#SBATCH -J MySlurmJob
-#SBATCH -N 1
-#SBATCH -n 2
-#SBATCH --output=MySlurmJob%j.out 
-module load bamtools && bamtools merge $(for file in $(ls *RG.bam); do echo " -in "$file; done) -out outbam.merge.bam -forceCompression
-```
+os.system("sbatch slurm_template")
+os.remove("slurm_template")
